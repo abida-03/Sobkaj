@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+{% block title %}Leave a Review — Sobkaj{% endblock %}
+
+{% block extra_css %}
+<style>
+    .star-rating {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.4rem;
+        flex-direction: row;
+    }
+    .star-rating input[type="radio"] {
+        display: none;
+    }
+    .star-rating label {
+        font-size: 2.2rem;
+        color: rgba(255,255,255,0.15);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        line-height: 1;
+        padding: 0;
+        margin: 0;
+        display: inline-block;
+        text-align: center;
+    }
+    .star-rating label.active,
+    .star-rating.hovered label.hover-active {
+        color: var(--warning);
+        text-shadow: 0 0 12px rgba(245,158,11,0.4);
+        transform: scale(1.1);
+    }
+    
+    /* Suppress the permanently active state while the user is actively hovering the star container, to let them preview their new selection */
+    .star-rating.hovered label.active:not(.hover-active) {
+        color: rgba(255,255,255,0.15);
+        text-shadow: none;
+        transform: none;
+    }
+    .review-prompt {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        padding: 0.6rem 0.8rem;
+        border-radius: var(--radius-sm);
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--border);
+        margin-bottom: 0.5rem;
+    }
+    .review-prompt i { color: var(--accent); margin-right: 0.4rem; }
+
+    /* Divider between quick rate and full review */
+    .review-divider {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 1.5rem 0;
+        color: var(--text-muted);
+        font-size: 0.82rem;
+        font-weight: 500;
+    }
+    .review-divider::before,
+    .review-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+    }
+
+    /* Toggle animation for review section */
+    .review-section {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease, opacity 0.3s ease;
+        opacity: 0;
+    }
+    .review-section.open {
+        max-height: 500px;
+        opacity: 1;
+    }
+
+    .toggle-review-btn {
+        background: transparent;
+        border: 1px dashed var(--border);
+        color: var(--accent);
+        border-radius: var(--radius);
+        padding: 0.65rem 1rem;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        width: 100%;
+    }
+    .toggle-review-btn:hover {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+    }
+    .toggle-review-btn.active {
+        border-style: solid;
+        border-color: var(--accent);
+        background: var(--accent-soft);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center" style="min-height: max(60vh, 400px); align-items: center;">
+    <div class="col-md-6 col-lg-5">
+        <section class="card-glass-static p-4 p-md-5" aria-label="Submit review">
+            <div class="text-center mb-4">
+                <div style="width: 56px; height: 56px; border-radius: 16px; background: var(--warning-soft);
+                            display: inline-flex; align-items: center; justify-content: center; margin-bottom: 0.75rem;">
+                    <i class="bi bi-star-half" style="font-size: 1.5rem; color: var(--warning);"></i>
+                </div>
+                <h1 class="fw-bold" style="color: var(--text-heading); font-size: 1.4rem;">Rate Your Experience</h1>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">
+                    Service by <strong style="color: var(--success);">{{ booking.worker_name }}</strong>
+                    on {{ booking.service_date }}
+                </p>
+            </div>
+
+            <form method="POST" action="/leave_review/{{ booking.booking_id }}" id="reviewForm" aria-label="Review form">
+                <!-- Interactive Star Rating -->
+                <div class="mb-4 text-center">
+                    <label class="form-label d-block" style="margin-bottom: 0.6rem;">How would you rate this service?</label>
+                    <div class="star-rating" id="reviewStars">
+                        <input type="radio" name="stars" id="star1" value="1" class="visually-hidden" required>
+                        <label for="star1" title="Poor" data-value="1">★</label>
+                        <input type="radio" name="stars" id="star2" value="2" class="visually-hidden">
+                        <label for="star2" title="Below Average" data-value="2">★</label>
+                        <input type="radio" name="stars" id="star3" value="3" class="visually-hidden">
+                        <label for="star3" title="Average" data-value="3">★</label>
+                        <input type="radio" name="stars" id="star4" value="4" class="visually-hidden">
+                        <label for="star4" title="Good" data-value="4">★</label>
+                        <input type="radio" name="stars" id="star5" value="5" class="visually-hidden" checked>
+                        <label for="star5" title="Excellent" data-value="5">★</label>
+                    </div>
+                </div>
+
+                <!-- Quick Rate Button -->
+                <button type="submit" class="btn btn-primary-glow w-100" style="padding: 0.75rem;" id="quickRateBtn">
+                    <i class="bi bi-star-fill me-1"></i>Submit Rating Only
+                </button>
+
+                <!-- Divider -->
+                <div class="review-divider">or</div>
+
+                <!-- Toggle to show review text area -->
+                <button type="button" class="toggle-review-btn" id="toggleReviewBtn" onclick="toggleReview()">
+                    <i class="bi bi-chat-left-text me-1"></i>I also want to write a review
+                </button>
+
+                <!-- Review Text Section (hidden by default) -->
+                <div class="review-section" id="reviewSection">
+                    <div class="mt-3 mb-4">
+                        <label for="review_text" class="form-label">
+                            <i class="bi bi-chat-left-text me-1"></i>Write Your Review
+                        </label>
+                        <div class="review-prompt">
+                            <i class="bi bi-lightbulb"></i>Consider mentioning: punctuality, quality of work, professionalism, communication
+                        </div>
+                        <textarea class="form-control" id="review_text" name="review_text" rows="4"
+                            placeholder="What stood out? Was the worker on time? Would you book again?"></textarea>
+                    </div>
+
+                    <!-- Submit with Review -->
+                    <button type="submit" class="btn btn-success-glow w-100" style="padding: 0.75rem;" id="fullReviewBtn">
+                        <i class="bi bi-send me-1"></i>Submit Rating & Review
+                    </button>
+                </div>
+            </form>
+
+            <p class="mt-3 text-center mb-0">
+                <a href="/my_bookings" class="link-accent" style="font-size: 0.9rem;">
+                    <i class="bi bi-arrow-left me-1"></i>Back to My Bookings
+                </a>
+            </p>
+        </section>
+    </div>
+</div>
+
+<script>
+    function toggleReview() {
+        const section = document.getElementById('reviewSection');
+        const toggleBtn = document.getElementById('toggleReviewBtn');
+        const quickRateBtn = document.getElementById('quickRateBtn');
+
+        if (section.classList.contains('open')) {
+            // Collapse — go back to "rating only" mode
+            section.classList.remove('open');
+            toggleBtn.classList.remove('active');
+            toggleBtn.innerHTML = '<i class="bi bi-chat-left-text me-1"></i>I also want to write a review';
+            quickRateBtn.style.display = '';
+            // Clear review text so it submits as rating-only
+            document.getElementById('review_text').value = '';
+        } else {
+            // Expand — show review text area
+            section.classList.add('open');
+            toggleBtn.classList.add('active');
+            toggleBtn.innerHTML = '<i class="bi bi-x-circle me-1"></i>Cancel review — rate only';
+            quickRateBtn.style.display = 'none';
+            // Focus the textarea
+            setTimeout(() => document.getElementById('review_text').focus(), 350);
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const starcontainer = document.getElementById("reviewStars");
+        
+        if (starcontainer) {
+            const labels = starcontainer.querySelectorAll("label");
+            const inputs = starcontainer.querySelectorAll("input[type='radio']");
+
+            function updateStars() {
+                let selectedValue = 0;
+                inputs.forEach(function(input) {
+                    if(input.checked) selectedValue = parseInt(input.value);
+                });
+                labels.forEach(function(label) {
+                    if (parseInt(label.getAttribute("data-value")) <= selectedValue) {
+                        label.classList.add("active");
+                    } else {
+                        label.classList.remove("active");
+                    }
+                });
+            }
+
+            starcontainer.addEventListener("mouseenter", function() {
+                starcontainer.classList.add("hovered");
+            });
+            starcontainer.addEventListener("mouseleave", function() {
+                starcontainer.classList.remove("hovered");
+                labels.forEach(function(lbl) {
+                    lbl.classList.remove("hover-active");
+                });
+            });
+
+            labels.forEach(function(label) {
+                label.addEventListener("mouseover", function() {
+                    let hoverValue = parseInt(label.getAttribute("data-value"));
+                    labels.forEach(function(lbl) {
+                        if (parseInt(lbl.getAttribute("data-value")) <= hoverValue) {
+                            lbl.classList.add("hover-active");
+                        } else {
+                            lbl.classList.remove("hover-active");
+                        }
+                    });
+                });
+
+                label.addEventListener("click", function() {
+                    setTimeout(updateStars, 10);
+                });
+            });
+
+            updateStars();
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+{% block title %}My Bookings — Sobkaj{% endblock %}
+
+{% block extra_css %}
+<style>
+    .booking-card {
+        border-radius: var(--radius);
+        padding: 1.25rem;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--border);
+        margin-bottom: 0.75rem;
+        transition: border-color var(--transition);
+    }
+    .booking-card:hover { border-color: rgba(127,90,240,0.25); }
+
+    .status-tracker {
+        display: flex;
+        gap: 0;
+        margin-bottom: 0.75rem;
+    }
+    .status-step {
+        flex: 1;
+        text-align: center;
+        position: relative;
+    }
+    .status-step::before {
+        content: '';
+        position: absolute;
+        top: 10px;
+        left: 0; right: 0;
+        height: 2px;
+        background: var(--border);
+        z-index: 0;
+    }
+    .status-step:first-child::before { left: 50%; }
+    .status-step:last-child::before { right: 50%; }
+    .status-dot {
+        width: 20px; height: 20px;
+        border-radius: 50%;
+        border: 2px solid var(--border);
+        background: var(--bg-surface);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 1;
+        font-size: 0.55rem;
+        transition: all var(--transition);
+    }
+    .status-step.done .status-dot {
+        border-color: var(--success);
+        background: var(--success-soft);
+        color: var(--success);
+    }
+    .status-step.done::before { background: var(--success); }
+    .status-step.current .status-dot {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+        color: var(--accent);
+        box-shadow: 0 0 0 4px var(--accent-glow);
+    }
+    .status-step.cancelled .status-dot {
+        border-color: var(--danger);
+        background: var(--danger-soft);
+        color: var(--danger);
+    }
+    .status-label {
+        display: block;
+        font-size: 0.65rem;
+        color: var(--text-muted);
+        margin-top: 0.3rem;
+        font-weight: 500;
+    }
+
+    @media (max-width: 768px) {
+        .booking-desktop { display: none; }
+    }
+    @media (min-width: 769px) {
+        .booking-mobile { display: none; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold" style="color: var(--text-heading); font-size: 1.3rem;">
+        <i class="bi bi-calendar3 me-2" style="color: var(--accent);"></i>My Bookings
+    </h1>
+    <a href="/customer/dashboard" class="btn btn-outline-light btn-sm" style="border-radius: var(--radius-sm); min-height: var(--touch-min); display: inline-flex; align-items: center;">
+        <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+    </a>
+</div>
+
+{% if bookings %}
+
+<!-- Desktop Table -->
+<div class="booking-desktop">
+    <div class="card-glass-static p-4">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover mb-0" style="background: transparent;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--accent);">
+                        <th style="font-size: 0.82rem;">#</th>
+                        <th style="font-size: 0.82rem;">Worker</th>
+                        <th style="font-size: 0.82rem;">Date & Time</th>
+                        <th style="font-size: 0.82rem;">Hours</th>
+                        <th style="font-size: 0.82rem;">Total (৳)</th>
+                        <th style="font-size: 0.82rem;">Status</th>
+                        <th style="font-size: 0.82rem;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for b in bookings %}
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                        <td>{{ b.booking_id }}</td>
+                        <td><strong style="color: var(--text-heading);">{{ b.worker_name }}</strong></td>
+                        <td>{{ b.service_date }} at {{ b.service_time }}</td>
+                        <td>{{ b.hours_requested }}</td>
+                        <td style="color: var(--success); font-weight: 600;">৳{{ b.total_amount }}</td>
+                        <td>
+                            {% if b.status == 'pending' %}
+                            <span class="status-badge status-pending">Awaiting Confirmation</span>
+                            {% elif b.status == 'confirmed' %}
+                            <span class="status-badge status-confirmed">Confirmed</span>
+                            {% elif b.status == 'completed' %}
+                            <span class="status-badge status-completed">Completed</span>
+                            {% elif b.status == 'cancelled' %}
+                            <span class="status-badge status-cancelled">Cancelled</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if b.status == 'completed' %}
+                                {% if b.has_review %}
+                                <a href="/leave_review/{{ b.booking_id }}" class="btn btn-sm"
+                                   style="background: var(--success-soft); color: var(--success); border: 1px solid rgba(34,197,94,0.3); border-radius: var(--radius-sm); min-height: var(--touch-min); display: inline-flex; align-items: center;">
+                                    <i class="bi bi-star-fill me-1"></i>Reviewed
+                                </a>
+                                {% else %}
+                                <a href="/leave_review/{{ b.booking_id }}" class="btn btn-sm"
+                                   style="background: var(--warning-soft); color: var(--warning); border: 1px solid rgba(245,158,11,0.3); border-radius: var(--radius-sm); min-height: var(--touch-min); display: inline-flex; align-items: center;">
+                                    <i class="bi bi-star me-1"></i>Rate / Review
+                                </a>
+                                {% endif %}
+                            {% else %}
+                            <span style="color: var(--text-muted);">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile Cards -->
+<div class="booking-mobile">
+    {% for b in bookings %}
+    <div class="booking-card">
+        <!-- Status Tracker -->
+        <div class="status-tracker">
+            {% if b.status == 'cancelled' %}
+            <div class="status-step cancelled"><div class="status-dot"><i class="bi bi-x"></i></div><span class="status-label">Cancelled</span></div>
+            {% else %}
+            <div class="status-step {{ 'done' if b.status in ['pending','confirmed','completed'] else '' }} {{ 'current' if b.status == 'pending' else '' }}">
+                <div class="status-dot"><i class="bi bi-check"></i></div><span class="status-label">Booked</span>
+            </div>
+            <div class="status-step {{ 'done' if b.status in ['confirmed','completed'] else '' }} {{ 'current' if b.status == 'confirmed' else '' }}">
+                <div class="status-dot"><i class="bi bi-check"></i></div><span class="status-label">Confirmed</span>
+            </div>
+            <div class="status-step {{ 'done' if b.status == 'completed' else '' }} {{ 'current' if b.status == 'completed' else '' }}">
+                <div class="status-dot"><i class="bi bi-check"></i></div><span class="status-label">Done</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <strong style="color: var(--text-heading); font-size: 1rem;">{{ b.worker_name }}</strong>
+                <div class="d-flex gap-3 mt-1" style="font-size: 0.82rem; color: var(--text-muted);">
+                    <span><i class="bi bi-calendar3 me-1"></i>{{ b.service_date }} - {{ b.service_time }}</span>
+                    <span><i class="bi bi-clock me-1"></i>{{ b.hours_requested }}h</span>
+                </div>
+            </div>
+            <div class="text-end">
+                <div style="color: var(--success); font-weight: 700; font-size: 1.05rem;">৳{{ b.total_amount }}</div>
+            </div>
+        </div>
+
+        {% if b.status == 'completed' %}
+            {% if b.has_review %}
+            <a href="/leave_review/{{ b.booking_id }}" class="btn btn-sm w-100 mt-2"
+               style="background: var(--success-soft); color: var(--success); border: 1px solid rgba(34,197,94,0.3); border-radius: var(--radius-sm); min-height: var(--touch-min);">
+                <i class="bi bi-star-fill me-1"></i>Reviewed
+            </a>
+            {% else %}
+            <a href="/leave_review/{{ b.booking_id }}" class="btn btn-sm w-100 mt-2"
+               style="background: var(--warning-soft); color: var(--warning); border: 1px solid rgba(245,158,11,0.3); border-radius: var(--radius-sm); min-height: var(--touch-min);">
+                <i class="bi bi-star me-1"></i>Rate / Review
+            </a>
+            {% endif %}
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<div class="card-glass-static p-5 text-center">
+    <i class="bi bi-calendar-x" style="font-size: 3rem; color: var(--text-muted);"></i>
+    <h3 class="mt-3" style="color: var(--text-heading); font-size: 1.1rem;">No bookings yet</h3>
+    <p style="color: var(--text-muted);">
+        Find and book a verified worker from the <a href="/customer/dashboard" class="link-accent">dashboard</a>.
+    </p>
+</div>
+{% endif %}
+{% endblock %}

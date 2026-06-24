@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+{% block title %}Profile Setup — Sobkaj{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Progress Stepper */
+    .stepper {
+        display: flex;
+        justify-content: center;
+        gap: 0;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+
+    .stepper::before {
+        content: '';
+        position: absolute;
+        top: 18px;
+        left: 25%;
+        right: 25%;
+        height: 2px;
+        background: var(--border);
+        z-index: 0;
+    }
+
+    .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
+        flex: 1;
+        position: relative;
+        z-index: 1;
+    }
+
+    .step-circle {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+        font-weight: 700;
+        border: 2px solid var(--border);
+        background: var(--bg-surface);
+        color: var(--text-muted);
+        transition: all var(--transition);
+    }
+
+    .step.active .step-circle {
+        border-color: var(--accent);
+        background: rgba(127, 90, 240, 0.15);
+        color: var(--accent);
+    }
+
+    .step-label {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .step.active .step-label {
+        color: var(--accent);
+    }
+
+    /* NID Explanation */
+    .nid-info {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.85rem 1rem;
+        border-radius: var(--radius);
+        background: var(--success-soft);
+        border: 1px solid rgba(44, 182, 125, 0.25);
+        margin-bottom: 1rem;
+        font-size: 0.82rem;
+        color: rgba(255, 255, 255, 0.75);
+    }
+
+    .nid-info i {
+        color: var(--success);
+        font-size: 1.1rem;
+        margin-top: 1px;
+        flex-shrink: 0;
+    }
+
+    /* Badge Preview */
+    .badge-preview {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1rem;
+        border-radius: var(--radius);
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px dashed var(--border);
+        margin-top: 0.75rem;
+        font-size: 0.82rem;
+        color: var(--text-muted);
+    }
+
+    .skill-checkbox {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 0.65rem 0.75rem 0.65rem 2.25rem;
+        transition: all var(--transition);
+        cursor: pointer;
+    }
+
+    .skill-checkbox:hover {
+        background: rgba(127, 90, 240, 0.06);
+        border-color: rgba(127, 90, 240, 0.25);
+    }
+
+    .skill-checkbox:has(input:checked) {
+        background: rgba(127, 90, 240, 0.1);
+        border-color: var(--accent);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <section class="card-glass-static p-4 p-md-5" aria-label="Profile setup form">
+
+            <!-- Progress Stepper -->
+            <div class="stepper">
+                <div class="step active">
+                    <div class="step-circle"><i class="bi bi-person-vcard"></i></div>
+                    <div class="step-label">Identity</div>
+                </div>
+                <div class="step active">
+                    <div class="step-circle"><i class="bi bi-tools"></i></div>
+                    <div class="step-label">Skills</div>
+                </div>
+                <div class="step active">
+                    <div class="step-circle"><i class="bi bi-camera"></i></div>
+                    <div class="step-label">Photo</div>
+                </div>
+            </div>
+
+            <div class="text-center mb-4">
+                <h1 class="fw-bold" style="color: var(--text-heading); font-size: 1.4rem;">Set Up Your Profile</h1>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Complete your profile to start receiving
+                    bookings from customers</p>
+            </div>
+
+            <form method="POST" action="/profile_setup" enctype="multipart/form-data">
+
+                <!-- NID Number -->
+                <div class="mb-3">
+                    <label for="nid_number" class="form-label">
+                        <i class="bi bi-credit-card me-1"></i>Your National ID (NID) Number
+                    </label>
+                    <div class="nid-info">
+                        <i class="bi bi-shield-check"></i>
+                        <div>
+                            <strong>NID is optional.</strong> Add your NID now or verify it later from your dashboard.
+                            Verified identity helps customers trust you.
+                            Workers with verified IDs receive up to 3× more bookings.
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 mb-2">
+                        <input type="text" class="form-control" id="nid_number" name="nid_number"
+                            placeholder="e.g. 1234567890" aria-describedby="nidHelp">
+                        <button type="button" class="btn btn-primary-glow" id="verifyNidBtn"
+                            style="white-space: nowrap; padding: 0.5rem 1rem;">
+                            <i class="bi bi-shield-check me-1"></i>Verify
+                        </button>
+                    </div>
+                    <div class="form-hint" id="nidHelp"><i class="bi bi-info-circle"></i>Optional: enter your 10 or 17-digit
+                        National ID number.</div>
+
+                    <!-- Verification Result (hidden by default) -->
+                    <div id="nidResult" style="display: none; margin-top: 0.75rem;"></div>
+
+                    <div class="badge-preview">
+                        <span class="trust-badge trust-badge-verified" style="font-size: 0.7rem;">
+                            <i class="bi bi-shield-check"></i>Verified
+                        </span>
+                        <span>← This badge will appear on your profile after verification</span>
+                    </div>
+                </div>
+
+                <!-- Hourly Rate -->
+                <div class="mb-3">
+                    <label for="hourly_rate" class="form-label">
+                        <i class="bi bi-cash me-1"></i>How much do you charge per hour? (৳)
+                    </label>
+                    <input type="number" class="form-control" id="hourly_rate" name="hourly_rate" placeholder="e.g. 500"
+                        min="1" step="1" required>
+                    <div class="form-hint"><i class="bi bi-info-circle"></i>Set a competitive rate. You can update this
+                        from your dashboard anytime.</div>
+                </div>
+
+                <!-- Availability Status -->
+                <div class="mb-3">
+                    <label for="availability_status" class="form-label">
+                        <i class="bi bi-clock me-1"></i>Initial Availability
+                    </label>
+                    <select class="form-select" id="availability_status" name="availability_status">
+                        <option value="available" selected>🟢 Available — Ready for work</option>
+                        <option value="busy">🟡 Busy — Currently occupied</option>
+                        <option value="offline">🔴 Offline — Not available</option>
+                    </select>
+                </div>
+
+                <!-- Profile Photo -->
+                <div class="mb-3">
+                    <label for="photo" class="form-label">
+                        <i class="bi bi-camera me-1"></i>Profile Photo
+                    </label>
+                    <input type="file" class="form-control" id="photo" name="photo" accept=".png,.jpg,.jpeg,.gif,.webp,image/*">
+                    <div class="form-hint"><i class="bi bi-info-circle"></i>JPG, PNG, GIF, or WEBP, max 10 MB. Workers with clear
+                        photos get booked up to 40% more often.</div>
+                </div>
+
+                <!-- Bio -->
+                <div class="mb-3">
+                    <label for="bio" class="form-label">
+                        <i class="bi bi-card-text me-1"></i>About You (Bio)
+                    </label>
+                    <textarea class="form-control" id="bio" name="bio" rows="3" maxlength="500"
+                        placeholder="Tell customers about your experience and what makes your service stand out."></textarea>
+                    <div class="form-hint"><i class="bi bi-info-circle"></i>Optional, but recommended. Max 500 characters.</div>
+                </div>
+
+                <!-- Skills -->
+                <div class="mb-4">
+                    <label class="form-label">
+                        <i class="bi bi-tools me-1"></i>Select Your Skills
+                    </label>
+                    <div class="row g-2">
+                        {% for skill in skills %}
+                        <div class="col-6">
+                            <div class="form-check skill-checkbox">
+                                <input class="form-check-input" type="checkbox" name="skills"
+                                    value="{{ skill.skill_id }}" id="skill_{{ skill.skill_id }}">
+                                <label class="form-check-label" for="skill_{{ skill.skill_id }}"
+                                    style="color: rgba(255,255,255,0.8); cursor: pointer;">
+                                    {{ skill.skill_name }}
+                                </label>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if not skills %}
+                    <p style="color: var(--text-muted); margin-top: 0.5rem;">No skills available. Please contact
+                        support.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" class="btn btn-success-glow w-100" style="padding: 0.8rem;">
+                    <i class="bi bi-check-circle me-1"></i>Save Profile & Start Getting Bookings
+                </button>
+            </form>
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('verifyNidBtn').addEventListener('click', async function () {
+        const nidInput = document.getElementById('nid_number');
+        const resultDiv = document.getElementById('nidResult');
+        const nid = nidInput.value.trim();
+        const btn = this;
+
+        if (!nid) {
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `
+            <div style="padding: 0.75rem 1rem; border-radius: var(--radius); background: rgba(248,113,113,0.1);
+                        border: 1px solid rgba(248,113,113,0.3); color: #fca5a5; font-size: 0.85rem;">
+                <i class="bi bi-exclamation-triangle me-1"></i>Please enter an NID number first.
+            </div>`;
+            return;
+        }
+
+        // Show loading state
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Verifying…';
+
+        try {
+            const formData = new FormData();
+            formData.append('nid_number', nid);
+
+            const resp = await fetch('/verify_nid', { method: 'POST', body: formData });
+            const data = await resp.json();
+
+            resultDiv.style.display = 'block';
+
+            if (data.verified) {
+                nidInput.style.borderColor = 'var(--success)';
+                resultDiv.innerHTML = `
+                <div style="padding: 0.85rem 1rem; border-radius: var(--radius); background: rgba(44,182,125,0.1);
+                            border: 1px solid rgba(44,182,125,0.3); font-size: 0.85rem;">
+                    <div style="color: var(--success); font-weight: 700; margin-bottom: 0.4rem;">
+                        <i class="bi bi-check-circle-fill me-1"></i>Verified Successfully
+                    </div>
+                    <div style="color: rgba(255,255,255,0.7);">
+                        <strong>Name:</strong> ${data.citizen_name}<br>
+                        <strong>Date of Birth:</strong> ${data.dob}<br>
+                        <strong>Address:</strong> ${data.address}
+                    </div>
+                </div>`;
+            } else {
+                nidInput.style.borderColor = 'var(--danger)';
+                resultDiv.innerHTML = `
+                <div style="padding: 0.75rem 1rem; border-radius: var(--radius); background: rgba(248,113,113,0.1);
+                            border: 1px solid rgba(248,113,113,0.3); color: #fca5a5; font-size: 0.85rem;">
+                    <i class="bi bi-x-circle me-1"></i>${data.error}
+                </div>`;
+            }
+        } catch (err) {
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `
+            <div style="padding: 0.75rem 1rem; border-radius: var(--radius); background: rgba(248,113,113,0.1);
+                        border: 1px solid rgba(248,113,113,0.3); color: #fca5a5; font-size: 0.85rem;">
+                <i class="bi bi-wifi-off me-1"></i>Could not reach verification server. Please try again.
+            </div>`;
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-shield-check me-1"></i>Verify';
+        }
+    });
+</script>
+{% endblock %}

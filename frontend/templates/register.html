@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+{% block title %}Register — Sobkaj{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hide native radio button visually but keep it functional */
+    .role-radio-input {
+        position: absolute !important;
+        opacity: 0 !important;
+        width: 1px !important;
+        height: 1px !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+    }
+
+
+    /* The label acts as the visual card */
+    .role-card-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        padding: 1.25rem;
+        border-radius: var(--radius);
+        border: 2px solid var(--border);
+        background: var(--bg-card);
+        transition: all var(--transition);
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+        width: 100%;
+    }
+
+    .role-card-label:hover {
+        border-color: var(--border-focus);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    /* Focus state via the hidden input */
+    .role-radio-input:focus-visible+.role-card-label {
+        outline: 2px solid var(--accent);
+        outline-offset: 4px;
+    }
+
+    /* Active/Checked State - Super Obvious */
+    .role-radio-input:checked+.role-card-label {
+        border-color: var(--accent);
+        background: rgba(var(--accent-rgb), 0.04);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), inset 0 0 0 1px var(--accent);
+        transform: translateY(-2px);
+    }
+
+    /* Elegant check icon that scales in */
+    .role-card-label .selection-indicator {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--accent);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transform: scale(0.8);
+        transition: all var(--transition);
+    }
+
+    .role-radio-input:checked+.role-card-label .selection-indicator {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    .role-card-label .role-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        margin-bottom: 0.5rem;
+        transition: all var(--transition);
+    }
+
+    .role-card-label .role-title {
+        font-weight: 700;
+        font-size: 1rem;
+        color: #fff;
+        margin-bottom: 0.2rem;
+    }
+
+    .role-card-label .role-desc {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+    }
+
+
+    .security-note {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        color: var(--text-muted);
+        font-size: 0.78rem;
+        margin-top: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-5">
+        <section class="card-glass-static p-4 p-md-5" aria-label="Registration form">
+            <div class="text-center mb-4">
+                <h1 class="fw-bold" style="color: var(--text-heading); font-size: 1.5rem;">Create Your Account</h1>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Join Dhaka's trusted network of home service
+                    professionals and families.</p>
+            </div>
+
+            <form method="POST" action="/register" id="registerForm">
+                <!-- Role Selector Cards -->
+                <div class="mb-4">
+                    <label class="form-label mb-3">Join Sobkaj as a:</label>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="position-relative h-100">
+                                <input type="radio" name="role" id="roleCustomer" value="customer"
+                                    class="role-radio-input visually-hidden" checked>
+                                <label for="roleCustomer" class="role-card-label">
+                                    <div class="selection-indicator">
+                                        <i class="bi bi-check2" aria-hidden="true"></i>
+                                    </div>
+                                    <div class="role-icon" style="background: var(--accent-soft);">
+                                        <i class="bi bi-person-heart" style="color: var(--accent);"
+                                            aria-hidden="true"></i>
+                                    </div>
+                                    <div class="role-title">Customer</div>
+                                    <div class="role-desc">I want to hire workers</div>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="position-relative h-100">
+                                <input type="radio" name="role" id="roleWorker" value="worker"
+                                    class="role-radio-input visually-hidden">
+                                <label for="roleWorker" class="role-card-label">
+                                    <div class="selection-indicator" style="background: var(--success);">
+                                        <i class="bi bi-check2" aria-hidden="true"></i>
+                                    </div>
+                                    <div class="role-icon" style="background: var(--success-soft);">
+                                        <i class="bi bi-tools" style="color: var(--success);" aria-hidden="true"></i>
+                                    </div>
+                                    <div class="role-title">Worker</div>
+                                    <div class="role-desc">I offer home services</div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Full Name -->
+                <div class="mb-3">
+                    <label for="full_name" class="form-label">Full Name</label>
+                    <input type="text" class="form-control" id="full_name" name="full_name" required>
+                </div>
+
+                <!-- Email -->
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" class="form-control" id="email" name="email" required>
+                    <div class="form-hint">You can use this same email to create both Customer and Worker accounts.</div>
+                </div>
+
+                <!-- Phone -->
+                <div class="mb-3">
+                    <label for="phone" class="form-label">Mobile Number</label>
+                    <input type="tel" class="form-control" id="phone" name="phone" aria-describedby="phoneHint">
+                    <div id="phoneHint" class="form-hint">Used for booking confirmations and worker communication.</div>
+                </div>
+
+                <!-- Password -->
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" required
+                        aria-describedby="passwordHint">
+                    <div id="passwordHint" class="form-hint">At least 8 characters.</div>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="mb-4">
+                    <label for="confirm_password" class="form-label">Re-enter Password</label>
+                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                </div>
+
+                <!-- Worker Specifications -->
+                <div class="mb-4" id="workerSpecifics" style="display: none;">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="1" id="is_brac_trained" name="is_brac_trained">
+                        <label class="form-check-label" for="is_brac_trained" style="color: var(--text-muted); font-size: 0.9rem;">
+                            I have completed BRAC training
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" class="btn btn-primary-glow w-100 mb-3" id="registerSubmit">
+                    Send Verification Code
+                </button>
+            </form>
+
+            <p class="text-center mb-0" style="font-size: 0.9rem;">
+                Already have an account?
+                <a href="/login" class="link-accent">Log in here</a>
+            </p>
+
+            <div class="security-note">
+                <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                <span>Your data is protected and never shared without consent</span>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const workerSpecifics = document.getElementById('workerSpecifics');
+        const roleCustomer = document.getElementById('roleCustomer');
+        const roleWorker = document.getElementById('roleWorker');
+
+        function toggleWorkerSpecifics() {
+            if (roleWorker && roleWorker.checked) {
+                workerSpecifics.style.display = 'block';
+            } else {
+                workerSpecifics.style.display = 'none';
+            }
+        }
+
+        if (roleCustomer && roleWorker) {
+            roleCustomer.addEventListener('change', toggleWorkerSpecifics);
+            roleWorker.addEventListener('change', toggleWorkerSpecifics);
+        }
+
+        // Auto-select worker role if ?role=worker is in the URL
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('role') === 'worker') {
+            if (roleWorker) {
+                roleWorker.checked = true;
+            }
+        }
+        
+        // Initial check on load
+        toggleWorkerSpecifics();
+    });
+</script>
+{% endblock %}

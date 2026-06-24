@@ -1,0 +1,658 @@
+{% extends "base.html" %}
+{% block title %}Worker Dashboard &mdash; Sobkaj{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-photo {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid var(--border-focus);
+        transition: border-color var(--transition);
+    }
+
+    .profile-photo:hover {
+        border-color: var(--accent);
+    }
+
+    .profile-photo-placeholder {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-card-hover);
+        border: 3px solid var(--border-focus);
+    }
+
+    .stat-card {
+        text-align: center;
+        padding: var(--space-md);
+        border-radius: var(--radius);
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+    }
+
+    .stat-value {
+        font-size: 1.3rem;
+        font-weight: 700;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: var(--space-xs);
+    }
+
+    .safety-tip {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.6rem;
+        padding: 0.6rem 0;
+        font-size: 0.82rem;
+        color: var(--text-label);
+    }
+
+    .safety-tip i {
+        color: var(--success);
+        margin-top: 2px;
+        flex-shrink: 0;
+    }
+
+    /* Mobile booking cards */
+    .booking-card-mobile {
+        border-radius: var(--radius);
+        padding: var(--space-md);
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        margin-bottom: 0.75rem;
+    }
+
+    .booking-card-mobile:last-child {
+        margin-bottom: 0;
+    }
+
+    /* Touch-friendly action buttons */
+    .booking-action-btn {
+        min-height: var(--touch-min);
+        border-radius: var(--radius-sm);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    @media (min-width: 769px) {
+        .booking-mobile-view {
+            display: none;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .booking-table-view {
+            display: none;
+        }
+
+        .profile-photo,
+        .profile-photo-placeholder {
+            width: 80px;
+            height: 80px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    <!--  -->
+    <!-- LEFT COLUMN: Profile + Stats -->
+    <!--  -->
+    <div class="col-md-4">
+
+        <!-- Profile Card -->
+        <section class="card-glass-static p-4 text-center mb-4" aria-label="Your profile">
+            {% if profile.photo_url %}
+            <img src="{{ profile.photo_url }}" alt="Your profile photo" class="profile-photo mb-3">
+            {% else %}
+            <div class="profile-photo-placeholder mx-auto mb-3" aria-hidden="true">
+                <i class="bi bi-person-fill" style="font-size: 2.5rem; color: var(--accent);"></i>
+            </div>
+            {% endif %}
+
+            <h1 class="fw-bold mb-1" style="color: var(--text-heading); font-size: 1.15rem;">{{ profile.full_name }}
+            </h1>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: var(--space-sm);">{{ profile.email }}
+            </p>
+
+            <!-- Verification Badges -->
+            <div class="d-flex justify-content-center flex-wrap gap-1 mb-2">
+                {% if profile.police_verified %}
+                <span class="trust-badge trust-badge-verified">
+                    <i class="bi bi-person-check"></i>Verified
+                </span>
+                {% endif %}
+                {% if profile.brac_trained %}
+                <span class="trust-badge trust-badge-trained">
+                    <i class="bi bi-award"></i>BRAC Trained
+                </span>
+                {% endif %}
+            </div>
+
+            {% if profile.phone %}
+            <p class="mb-0" style="color: var(--text-muted); font-size: 0.85rem;">
+                <i class="bi bi-telephone me-1"></i>{{ profile.phone }}
+            </p>
+            {% endif %}
+
+            <hr style="border-color: var(--border); margin: var(--space-md) 0;">
+
+            <div class="text-start" style="color: var(--text-label); font-size: 0.9rem;">
+                <p class="mb-2">
+                    <i class="bi bi-credit-card me-2" style="color: var(--accent);"></i>
+                    <strong>NID:</strong> {{ profile.nid_number or 'Not provided' }}
+                </p>
+                <p class="mb-0">
+                    <i class="bi bi-cash me-2" style="color: var(--success);"></i>
+                    <strong>Hourly rate:</strong> &#2547;{{ profile.hourly_rate }}/hr
+                </p>
+            </div>
+        </section>
+
+        <!-- Verification Settings -->
+        <section class="card-glass-static p-4 mb-4" aria-label="Verification settings">
+            <h2 class="fw-bold mb-3" style="color: var(--text-heading); font-size: 0.95rem;">
+                <i class="bi bi-patch-check me-2" style="color: var(--success);"></i>Verification Settings
+            </h2>
+
+            <div class="mb-3">
+                <label for="dashboardNidInput" class="form-label">NID Number</label>
+                <div class="d-flex gap-2">
+                    <input type="text" class="form-control form-control-sm" id="dashboardNidInput"
+                        value="{{ profile.nid_number or '' }}" placeholder="Enter your NID">
+                    <button type="button" class="btn btn-primary-glow btn-sm booking-action-btn" id="dashboardVerifyNidBtn"
+                        style="white-space: nowrap;">
+                        <i class="bi bi-shield-check me-1"></i>Verify
+                    </button>
+                </div>
+                <small style="color: var(--text-muted);">You can verify your NID any time after profile setup.</small>
+                <div id="dashboardNidResult" style="display: none; margin-top: 0.6rem;"></div>
+            </div>
+
+            <form method="POST" action="/update_brac_training">
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="brac_trained" name="brac_trained" value="1"
+                        {{ 'checked' if profile.brac_trained else '' }}>
+                    <label class="form-check-label" for="brac_trained" style="color: var(--text-label);">
+                        Mark my account as BRAC trained
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-outline-light btn-sm booking-action-btn w-100">
+                    <i class="bi bi-award me-1"></i>Update BRAC Training Status
+                </button>
+            </form>
+        </section>
+
+        <!-- Edit Profile Details -->
+        <section class="card-glass-static p-4 mb-4" aria-label="Edit profile details">
+            <h2 class="fw-bold mb-3" style="color: var(--text-heading); font-size: 0.95rem;">
+                <i class="bi bi-pencil-square me-2" style="color: var(--accent);"></i>Edit Profile Details
+            </h2>
+
+            <form method="POST" action="/update_worker_profile" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="workerPhone" class="form-label">
+                        <i class="bi bi-telephone me-1"></i>Phone Number
+                    </label>
+                    <input type="text" class="form-control form-control-sm" id="workerPhone" name="phone"
+                        value="{{ profile.phone or '' }}" placeholder="01XXXXXXXXX" maxlength="20">
+                </div>
+
+                <div class="mb-3">
+                    <label for="workerHourlyRate" class="form-label">
+                        <i class="bi bi-cash me-1"></i>Hourly Rate (&#2547;)
+                    </label>
+                    <input type="number" class="form-control form-control-sm" id="workerHourlyRate" name="hourly_rate"
+                        value="{{ profile.hourly_rate }}" min="50" max="2000" step="1" required>
+                    <small style="color: var(--text-muted);">Allowed range: &#2547;50 to &#2547;2000 per hour.</small>
+                </div>
+
+                <div class="mb-3">
+                    <label for="workerPhoto" class="form-label">
+                        <i class="bi bi-camera me-1"></i>Profile Picture
+                    </label>
+                    <input type="file" class="form-control form-control-sm" id="workerPhoto" name="photo"
+                        accept=".png,.jpg,.jpeg,.gif,.webp,image/*">
+                    <small style="color: var(--text-muted);">Leave empty to keep your current photo. Max 10 MB.</small>
+                </div>
+
+                <button type="submit" class="btn btn-primary-glow btn-sm booking-action-btn w-100">
+                    <i class="bi bi-check-circle me-1"></i>Save Profile Details
+                </button>
+            </form>
+        </section>
+
+        <!-- Bio -->
+        <section class="card-glass-static p-4 mb-4" aria-label="Your bio">
+            <h2 class="fw-bold mb-3" style="color: var(--text-heading); font-size: 0.95rem;">
+                <i class="bi bi-card-text me-2" style="color: var(--accent);"></i>About You
+            </h2>
+
+            {% if profile.bio %}
+            <p style="color: var(--text-label); font-size: 0.9rem; margin-bottom: 0.75rem;">
+                {{ profile.bio }}
+            </p>
+            {% else %}
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.75rem;">
+                No bio yet. Add one to help customers know your experience.
+            </p>
+            {% endif %}
+
+            <form method="POST" action="/update_bio">
+                <label for="bioTextarea" class="visually-hidden">Your bio</label>
+                <textarea id="bioTextarea" class="form-control form-control-sm mb-2" name="bio" rows="4" maxlength="500"
+                    placeholder="Tell customers about yourself, your experience, and why they should hire you.">{{ profile.bio or '' }}</textarea>
+                <div class="d-flex justify-content-between align-items-center">
+                    <small style="color: var(--text-muted);">Max 500 characters</small>
+                    <button type="submit" class="btn btn-primary-glow btn-sm booking-action-btn">
+                        <i class="bi bi-check-circle me-1"></i>Save Bio
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Earnings Summary -->
+        <section class="card-glass-static p-4 mb-4" aria-label="Earnings overview">
+            <div class="alert alert-info border-0 py-2 px-3 mb-3 d-flex align-items-center" style="background: var(--info-soft); color: var(--info); font-size: 0.85rem; border-radius: var(--radius-sm);">
+                <i class="bi bi-info-circle-fill me-2" style="font-size: 1.1rem;"></i>
+                <div>A 5% platform fee will be deducted from your earnings for each booking.</div>
+            </div>
+            <h2 class="fw-bold mb-3" style="color: var(--text-heading); font-size: 0.95rem;">
+                <i class="bi bi-graph-up me-2" style="color: var(--success);"></i>Earnings Overview
+            </h2>
+            <div class="row g-2">
+                <div class="col-6">
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: var(--success);">
+                            {% set completed = bookings | selectattr('status', 'equalto', 'completed') | list %}
+                            {% set gross_earned = completed | sum(attribute='total_amount') | default(0) %}
+                            {% set total_fee = completed | sum(attribute='platform_commission') | default(0) %}
+                            {% set net_earned = gross_earned - total_fee %}
+                            &#2547;{{ '%.2f' | format(net_earned) }}
+                        </div>
+                        <div class="stat-label">Total Earned (After 5% Fee)</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: var(--accent);">
+                            {{ completed | length }}
+                        </div>
+                        <div class="stat-label">Jobs Completed</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: var(--warning);">
+                            {% set pending = bookings | selectattr('status', 'equalto', 'pending') | list %}
+                            {{ pending | length }}
+                        </div>
+                        <div class="stat-label">Awaiting Response</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: var(--text);">
+                            {% set confirmed = bookings | selectattr('status', 'equalto', 'confirmed') | list %}
+                            {{ confirmed | length }}
+                        </div>
+                        <div class="stat-label">Upcoming Jobs</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Ratings & Reviews Stats -->
+        <section class="card-glass-static p-4 mb-4" aria-label="Ratings and reviews">
+            <h2 class="fw-bold mb-3" style="color: var(--text-heading); font-size: 0.95rem;">
+                <i class="bi bi-star me-2" style="color: var(--warning);"></i>Ratings & Reviews
+            </h2>
+            <div class="row g-2">
+                <div class="col-4">
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: var(--warning);">
+                            {% if rating_stats and rating_stats.avg_rating %}
+                                {{ rating_stats.avg_rating }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </div>
+                        <div class="stat-label"><i class="bi bi-star-fill" style="font-size: 0.6rem; color: var(--warning);"></i> Avg Rating</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: var(--accent);">
+                            {{ rating_stats.rating_count if rating_stats else 0 }}
+                        </div>
+                        <div class="stat-label"><i class="bi bi-bar-chart-fill" style="font-size: 0.6rem; color: var(--accent);"></i> Ratings</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: var(--success);">
+                            {{ rating_stats.review_count if rating_stats else 0 }}
+                        </div>
+                        <div class="stat-label"><i class="bi bi-chat-left-text-fill" style="font-size: 0.6rem; color: var(--success);"></i> Reviews</div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3 text-center">
+                <a href="/worker/profile/{{ session['user_id'] }}" class="btn btn-outline-light btn-sm w-100" style="border-radius: var(--radius-sm);">
+                    <i class="bi bi-person-lines-fill me-1"></i>See Details
+                </a>
+            </div>
+        </section>
+
+        <!-- Availability Toggle -->
+        <section class="card-glass-static p-4 mb-4" aria-label="Set availability">
+            <h2 class="fw-bold mb-3" style="color: var(--text-heading); font-size: 0.95rem;">
+                <i class="bi bi-clock me-2" style="color: var(--accent);"></i>Your Availability
+            </h2>
+            <form method="POST" action="/update_availability">
+                <label for="availabilitySelect" class="form-label">Set your status so customers know when you're
+                    free</label>
+                <div class="d-flex gap-2">
+                    <select class="form-select form-select-sm" name="availability_status" id="availabilitySelect">
+                        <option value="available" {{ 'selected' if profile.availability_status=='available' }}>
+                            Available &mdash; ready for work
+                        </option>
+                        <option value="busy" {{ 'selected' if profile.availability_status=='busy' }}>
+                            Busy &mdash; working right now
+                        </option>
+                        <option value="offline" {{ 'selected' if profile.availability_status=='offline' }}>
+                            Offline &mdash; not available
+                        </option>
+                    </select>
+                    <button type="submit" class="btn btn-primary-glow btn-sm booking-action-btn"
+                        style="padding: 0.3rem var(--space-md);">Save</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- My Skills -->
+        <section class="card-glass-static p-4 mb-4" aria-label="Your skills">
+            <h2 class="fw-bold mb-3" style="color: var(--text-heading); font-size: 0.95rem;">
+                <i class="bi bi-tools me-2" style="color: var(--accent);"></i>Your Skills
+            </h2>
+            {% if my_skills %}
+            <div class="d-flex flex-wrap gap-2">
+                {% for skill in my_skills %}
+                <span class="d-inline-flex align-items-center gap-2 px-3 py-2" style="background: var(--accent-soft); border: 1px solid rgba(127,90,240,0.25);
+                             border-radius: var(--radius-full); color: #c4b5fd; font-size: 0.82rem;">
+                    {{ skill.skill_name }}
+                    <form method="POST" action="/remove_skill" class="d-inline m-0 p-0">
+                        <input type="hidden" name="skill_id" value="{{ skill.skill_id }}">
+                        <button type="submit" class="btn btn-sm p-0 border-0" style="color: var(--danger); line-height: 1;
+                                min-width: 24px; min-height: 24px;" aria-label="Remove {{ skill.skill_name }}">
+                            <i class="bi bi-x-circle-fill"></i>
+                        </button>
+                    </form>
+                </span>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0;">
+                No skills added yet. Add your skills so customers can find you.
+            </p>
+            {% endif %}
+
+            {% if available_skills %}
+            <form method="POST" action="/add_skill" class="d-flex gap-2 mt-3">
+                <label for="addSkillSelect" class="visually-hidden">Choose a skill to add</label>
+                <select class="form-select form-select-sm" name="skill_id" id="addSkillSelect" required>
+                    <option value="" disabled selected>Choose a skill to add...</option>
+                    {% for skill in available_skills %}
+                    <option value="{{ skill.skill_id }}">{{ skill.skill_name }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary-glow btn-sm booking-action-btn"
+                    style="padding: 0.3rem 0.8rem;" aria-label="Add selected skill">
+                    <i class="bi bi-plus-lg"></i>
+                </button>
+            </form>
+            {% endif %}
+        </section>
+
+        <!-- Safety Tips -->
+        <section class="card-glass-static p-4" aria-label="Safety tips">
+            <h2 class="fw-bold mb-3" style="color: var(--text-heading); font-size: 0.95rem;">
+                <i class="bi bi-heart-pulse me-2" style="color: var(--success);"></i>Stay Safe
+            </h2>
+            <div class="safety-tip">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Work within pre-agreed hours and tasks only</span>
+            </div>
+            <div class="safety-tip">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Share your work location with someone you trust</span>
+            </div>
+            <div class="safety-tip">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Report any issues to Sobkaj support right away</span>
+            </div>
+            <div class="safety-tip">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Confirm payment terms before starting any job</span>
+            </div>
+        </section>
+    </div>
+
+    <!--  -->
+    <!-- RIGHT COLUMN: Incoming Bookings -->
+    <!--  -->
+    <div class="col-md-8">
+        <section class="card-glass-static p-4" aria-label="Incoming bookings">
+            <h2 class="fw-bold mb-4" style="color: var(--text-heading); font-size: 1.1rem;">
+                <i class="bi bi-inbox me-2" style="color: var(--accent);"></i>Incoming Bookings
+                {% set pending_count = bookings | selectattr('status', 'equalto', 'pending') | list | length %}
+                {% if pending_count > 0 %}
+                <span class="status-badge status-pending ms-2">
+                    {{ pending_count }} new
+                </span>
+                {% endif %}
+            </h2>
+
+            {% if bookings %}
+
+            <!-- Desktop Table View -->
+            <div class="booking-table-view">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover mb-0" style="background: transparent;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--accent);">
+                                <th style="font-size: 0.82rem;">#</th>
+                                <th style="font-size: 0.82rem;">Customer</th>
+                                <th style="font-size: 0.82rem;">Date & Time</th>
+                                <th style="font-size: 0.82rem;">Hours</th>
+                                <th style="font-size: 0.82rem;">You'll Earn</th>
+                                <th style="font-size: 0.82rem;">Status</th>
+                                <th style="font-size: 0.82rem;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for b in bookings %}
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                                <td>{{ b.booking_id }}</td>
+                                <td>
+                                    {{ b.customer_name }}
+                                    {% if b.customer_phone %}
+                                    <br><small style="color: var(--text-muted);">{{ b.customer_phone }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>{{ b.service_date }} at {{ b.service_time }}</td>
+                                <td>{{ b.hours_requested }}h</td>
+                                <td style="color: var(--success); font-weight: 600;">&#2547;{{ "%.2f"|format(b.total_amount - b.platform_commission) }}</td>
+                                <td>
+                                    <span class="status-badge status-{{ b.status }}">{{ b.status|capitalize }}</span>
+                                </td>
+                                <td>
+                                    {% if b.status == 'pending' %}
+                                    <div class="d-flex gap-1">
+                                        <form method="POST" action="/update_booking_status">
+                                            <input type="hidden" name="booking_id" value="{{ b.booking_id }}">
+                                            <input type="hidden" name="new_status" value="confirmed">
+                                            <button class="btn btn-sm btn-outline-success booking-action-btn"
+                                                aria-label="Accept booking from {{ b.customer_name }}">
+                                                <i class="bi bi-check-lg"></i>
+                                            </button>
+                                        </form>
+                                        <form method="POST" action="/update_booking_status">
+                                            <input type="hidden" name="booking_id" value="{{ b.booking_id }}">
+                                            <input type="hidden" name="new_status" value="cancelled">
+                                            <button class="btn btn-sm btn-outline-danger booking-action-btn"
+                                                aria-label="Decline booking from {{ b.customer_name }}">
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                    {% elif b.status == 'confirmed' %}
+                                    <form method="POST" action="/update_booking_status">
+                                        <input type="hidden" name="booking_id" value="{{ b.booking_id }}">
+                                        <input type="hidden" name="new_status" value="completed">
+                                        <button class="btn btn-sm btn-outline-success booking-action-btn"
+                                            aria-label="Mark booking as completed">
+                                            <i class="bi bi-check-circle me-1"></i>Done
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <span style="color: var(--text-muted);">&mdash;</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Mobile Card View -->
+            <div class="booking-mobile-view">
+                {% for b in bookings %}
+                <div class="booking-card-mobile">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <strong style="color: var(--text-heading);">{{ b.customer_name }}</strong>
+                            {% if b.customer_phone %}
+                            <br><small style="color: var(--text-muted);">{{ b.customer_phone }}</small>
+                            {% endif %}
+                        </div>
+                        <span class="status-badge status-{{ b.status }}">{{ b.status|capitalize }}</span>
+                    </div>
+                    <div class="d-flex gap-3 mb-2" style="font-size: 0.85rem; color: var(--text-muted);">
+                        <span><i class="bi bi-calendar3 me-1"></i>{{ b.service_date }} - {{ b.service_time }}</span>
+                        <span><i class="bi bi-clock me-1"></i>{{ b.hours_requested }}h</span>
+                        <span style="color: var(--success); font-weight: 600;"><i class="bi bi-cash me-1"></i>&#2547;{{
+                            "%.2f"|format(b.total_amount - b.platform_commission) }}</span>
+                    </div>
+                    {% if b.status == 'pending' %}
+                    <div class="d-flex gap-2">
+                        <form method="POST" action="/update_booking_status" class="flex-fill">
+                            <input type="hidden" name="booking_id" value="{{ b.booking_id }}">
+                            <input type="hidden" name="new_status" value="confirmed">
+                            <button class="btn btn-sm btn-outline-success w-100 booking-action-btn"
+                                aria-label="Accept booking">
+                                <i class="bi bi-check-lg me-1"></i>Accept
+                            </button>
+                        </form>
+                        <form method="POST" action="/update_booking_status" class="flex-fill">
+                            <input type="hidden" name="booking_id" value="{{ b.booking_id }}">
+                            <input type="hidden" name="new_status" value="cancelled">
+                            <button class="btn btn-sm btn-outline-danger w-100 booking-action-btn"
+                                aria-label="Decline booking">
+                                <i class="bi bi-x-lg me-1"></i>Decline
+                            </button>
+                        </form>
+                    </div>
+                    {% elif b.status == 'confirmed' %}
+                    <form method="POST" action="/update_booking_status">
+                        <input type="hidden" name="booking_id" value="{{ b.booking_id }}">
+                        <input type="hidden" name="new_status" value="completed">
+                        <button class="btn btn-sm btn-outline-success w-100 booking-action-btn"
+                            aria-label="Mark as done">
+                            <i class="bi bi-check-circle me-1"></i>Mark as Done
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            {% else %}
+            <div class="text-center py-4">
+                <i class="bi bi-inbox" style="font-size: 2.5rem; color: var(--text-muted);"></i>
+                <h3 class="mt-2" style="color: var(--text-heading); font-size: 1rem;">No bookings yet</h3>
+                <p style="color: var(--text-muted); margin-bottom: 0; font-size: 0.9rem;">
+                    Once you add skills, customers will be able to find and book you.
+                </p>
+            </div>
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const verifyBtn = document.getElementById('dashboardVerifyNidBtn');
+        const nidInput = document.getElementById('dashboardNidInput');
+        const resultDiv = document.getElementById('dashboardNidResult');
+
+        if (!verifyBtn || !nidInput || !resultDiv) {
+            return;
+        }
+
+        verifyBtn.addEventListener('click', async function () {
+            const nid = nidInput.value.trim();
+
+            if (!nid) {
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = '<div style="padding: 0.6rem 0.75rem; border-radius: var(--radius); background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: #fca5a5; font-size: 0.82rem;"><i class="bi bi-exclamation-triangle me-1"></i>Please enter an NID number first.</div>';
+                return;
+            }
+
+            verifyBtn.disabled = true;
+            verifyBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Verifying...';
+
+            try {
+                const formData = new FormData();
+                formData.append('nid_number', nid);
+
+                const resp = await fetch('/verify_nid', { method: 'POST', body: formData });
+                const data = await resp.json();
+
+                resultDiv.style.display = 'block';
+
+                if (data.verified) {
+                    nidInput.style.borderColor = 'var(--success)';
+                    resultDiv.innerHTML = '<div style="padding: 0.6rem 0.75rem; border-radius: var(--radius); background: rgba(44,182,125,0.1); border: 1px solid rgba(44,182,125,0.3); color: var(--success); font-size: 0.82rem;"><i class="bi bi-check-circle-fill me-1"></i>NID verified successfully. Refreshing dashboard...</div>';
+                    setTimeout(function () {
+                        window.location.reload();
+                    }, 800);
+                } else {
+                    nidInput.style.borderColor = 'var(--danger)';
+                    resultDiv.innerHTML = '<div style="padding: 0.6rem 0.75rem; border-radius: var(--radius); background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: #fca5a5; font-size: 0.82rem;"><i class="bi bi-x-circle me-1"></i>' + (data.error || 'Verification failed') + '</div>';
+                }
+            } catch (err) {
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = '<div style="padding: 0.6rem 0.75rem; border-radius: var(--radius); background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: #fca5a5; font-size: 0.82rem;"><i class="bi bi-wifi-off me-1"></i>Could not reach verification server. Please try again.</div>';
+            } finally {
+                verifyBtn.disabled = false;
+                verifyBtn.innerHTML = '<i class="bi bi-shield-check me-1"></i>Verify';
+            }
+        });
+    });
+</script>
+{% endblock %}

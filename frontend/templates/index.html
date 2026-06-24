@@ -1,0 +1,658 @@
+{% extends "base.html" %}
+{% block title %}Sobkaj &mdash; Dhaka's Trusted Home Services{% endblock %}
+
+{% block container_class %}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ===== Homepage Specific CSS Variables ===== */
+:root {
+    --hp-primary: #6366f1;
+    --hp-primary-dark: #4f46e5;
+    --hp-primary-light: #a5b4fc;
+    --hp-primary-glow: rgba(99, 102, 241, 0.3);
+    --hp-secondary: #f59e0b;
+    --hp-secondary-light: #fcd34d;
+    --hp-white: #ffffff;
+    --hp-dark: #0f172a;
+    --hp-gray-50: #f8fafc;
+    --hp-gray-100: #f1f5f9;
+    --hp-gray-500: #64748b;
+    --hp-gray-600: #475569;
+    --hp-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --hp-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --hp-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    --hp-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    
+    --hp-gradient-primary: linear-gradient(135deg, var(--accent) 0%, #764ba2 100%);
+    --hp-radius-full: 9999px;
+    --hp-radius-xl: 1.5rem;
+    --hp-radius-2xl: 2rem;
+}
+
+/* ===== Typography overrides for homepage ===== */
+.hp-content {
+    font-family: 'Poppins', 'Inter', -apple-system, sans-serif;
+    color: var(--hp-dark);
+}
+
+.hp-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+/* ===== Hero Section ===== */
+.hero {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    padding: 5rem 0 4rem;
+    overflow: hidden;
+    background: linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-surface) 100%);
+    margin-top: -1.5rem; /* pull up under navbar */
+}
+
+.hero-shapes {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.shape {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.5;
+}
+
+.shape-1 {
+    width: 600px;
+    height: 600px;
+    background: rgba(138, 122, 209, 0.2);
+    top: -200px;
+    right: -200px;
+    animation: float 15s ease-in-out infinite;
+}
+
+.shape-2 {
+    width: 400px;
+    height: 400px;
+    background: rgba(69, 163, 126, 0.1);
+    bottom: -100px;
+    left: -100px;
+    animation: float 12s ease-in-out infinite reverse;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-30px) rotate(5deg); }
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 650px;
+    text-align: left;
+}
+
+.hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 2rem;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--hp-radius-full);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text);
+    box-shadow: var(--hp-shadow-md);
+    margin-bottom: 1.5rem;
+    animation: fadeInUp 0.5s ease forwards;
+}
+
+.hero-title {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    color: var(--text-heading);
+    animation: fadeInUp 0.5s ease 0.1s forwards;
+    opacity: 0;
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, var(--accent), var(--success));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero-subtitle {
+    font-size: 1.125rem;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+    line-height: 1.8;
+    animation: fadeInUp 0.5s ease 0.2s forwards;
+    opacity: 0;
+}
+
+.hero-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    animation: fadeInUp 0.5s ease 0.3s forwards;
+    opacity: 0;
+}
+
+.hp-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: var(--hp-radius-full);
+    font-family: inherit;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.hp-btn-primary {
+    background: var(--hp-gradient-primary);
+    color: var(--hp-white);
+    box-shadow: 0 4px 15px var(--hp-primary-glow);
+}
+
+.hp-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px var(--hp-primary-glow);
+    color: var(--hp-white);
+}
+
+.hp-btn-glass {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--hp-shadow-md);
+}
+
+.hp-btn-glass:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    box-shadow: var(--hp-shadow-lg);
+    color: var(--hp-white);
+}
+
+.hp-btn-lg {
+    padding: 1rem 2rem;
+    font-size: 1rem;
+}
+
+.hero-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    animation: fadeInUp 0.5s ease 0.4s forwards;
+    opacity: 0;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: var(--hp-radius-xl);
+    box-shadow: var(--hp-shadow-md);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-heading);
+    line-height: 1.2;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.hero-image {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    display: none;
+}
+
+.floating-card {
+    position: absolute;
+    background: var(--bg-card);
+    padding: 1rem 1.5rem;
+    border-radius: var(--hp-radius-xl);
+    box-shadow: var(--hp-shadow-xl);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    animation: floatCard 3s ease-in-out infinite;
+    color: var(--text);
+}
+
+.card-badge {
+    padding: 0.25rem 0.5rem;
+    background: var(--success);
+    color: white;
+    border-radius: var(--hp-radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.card-price {
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.card-1 { top: 10%; left: 0; animation-delay: 0s; }
+.card-2 { top: 45%; right: 0; animation-delay: 0.5s; }
+.card-3 { bottom: 15%; left: 20%; animation-delay: 1s; }
+
+@keyframes floatCard {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* ===== Categories Section ===== */
+.categories-section {
+    padding: 5rem 0;
+    background: var(--bg-surface);
+}
+
+.section-title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    text-align: center;
+    color: var(--text-heading);
+    margin-bottom: 0.5rem;
+}
+
+.section-subtitle {
+    font-size: 1.125rem;
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.5rem;
+}
+
+.category-card {
+    background: var(--bg-card);
+    padding: 2rem 1.5rem;
+    border-radius: var(--hp-radius-xl);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 1px solid var(--border);
+    color: var(--text);
+}
+
+.category-card:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--accent);
+    transform: translateY(-4px);
+    box-shadow: var(--hp-shadow-lg);
+}
+
+.category-icon { font-size: 3rem; margin-bottom: 1rem; }
+
+.category-card h3 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--text-heading);
+    margin-bottom: 0.25rem;
+}
+
+.category-card p {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+/* ===== How It Works ===== */
+.how-it-works {
+    padding: 5rem 0;
+    background: var(--bg-deep);
+}
+
+.steps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+.step-card {
+    text-align: center;
+    padding: 2rem;
+    position: relative;
+    background: var(--bg-card);
+    border-radius: var(--hp-radius-xl);
+    border: 1px solid var(--border);
+}
+
+.step-number {
+    position: absolute;
+    top: -1rem;
+    right: 1.5rem;
+    font-size: 4rem;
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.05);
+    line-height: 1;
+}
+
+.step-card h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-heading);
+    margin-bottom: 0.75rem;
+}
+
+.step-card p {
+    color: var(--text-muted);
+    line-height: 1.7;
+}
+
+/* ===== CTA Section ===== */
+.cta-section {
+    padding: 5rem 0;
+    background: var(--bg-surface);
+}
+
+.cta-card {
+    background: var(--hp-gradient-primary);
+    border-radius: var(--hp-radius-2xl);
+    padding: 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 3rem;
+    flex-wrap: wrap;
+    box-shadow: var(--hp-shadow-2xl);
+    position: relative;
+    overflow: hidden;
+}
+
+.cta-content { z-index: 1; position: relative; }
+
+.cta-content h2 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--hp-white);
+    margin-bottom: 1rem;
+}
+
+.cta-content p {
+    font-size: 1.125rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 1.5rem;
+    max-width: 500px;
+}
+
+.hp-btn-white {
+    background: var(--hp-white);
+    color: var(--accent);
+    box-shadow: var(--hp-shadow-md);
+}
+
+.hp-btn-white:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--hp-shadow-lg);
+    color: var(--accent);
+}
+
+.cta-features {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    z-index: 1;
+    position: relative;
+}
+
+.cta-feature {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--hp-white);
+    font-weight: 500;
+}
+
+.check-icon {
+    width: 24px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+}
+
+@media (min-width: 1200px) { .hero-image { display: block; } }
+@media (max-width: 1199px) { .hero-grid { grid-template-columns: 1fr; } }
+@media (max-width: 768px) {
+    .hero-title { font-size: 2.25rem; }
+    .hero-cta { flex-direction: column; }
+    .hero-cta a { width: 100%; justify-content: center; }
+    .cta-card { padding: 2rem; flex-direction: column; text-align: center; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hp-content">
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="hero-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+        </div>
+        <div class="hp-container">
+            <div class="hero-grid">
+                <div class="hero-content">
+                    <div class="hero-badge">
+                        <span class="badge-icon">⭐</span>
+                        <span>Dhaka's #1 Service Marketplace</span>
+                    </div>
+                    <h1 class="hero-title">
+                        Find Trusted<br>
+                        <span class="gradient-text">Skilled Workers</span><br>
+                        In Your Area
+                    </h1>
+                    <p class="hero-subtitle">
+                        Connect with verified plumbers, electricians, maids, babysitters and more.
+                        Quality service at fair prices. Rated by real customers.
+                    </p>
+                    <div class="hero-cta">
+                        <a href="{{ url_for('customer_dashboard') }}" class="hp-btn hp-btn-primary hp-btn-lg text-decoration-none">
+                            <span class="hp-btn-icon"><i class="bi bi-search"></i></span>
+                            Find Workers
+                        </a>
+                        <a href="{{ url_for('register') }}?role=worker" class="hp-btn hp-btn-glass hp-btn-lg text-decoration-none">
+                            <span class="hp-btn-icon"><i class="bi bi-person-badge"></i></span>
+                            Join as Worker
+                        </a>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="stat-card">
+                            <span class="stat-icon mt-1"><i class="bi bi-people-fill text-info" style="font-size:1.8rem;"></i></span>
+                            <div class="stat-info ms-2">
+                                <span class="stat-number">10k+</span>
+                                <span class="stat-label">Active Workers</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-icon mt-1"><i class="bi bi-star-fill text-warning" style="font-size:1.8rem;"></i></span>
+                            <div class="stat-info ms-2">
+                                <span class="stat-number">4.8</span>
+                                <span class="stat-label">Happy Reviews</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-icon mt-1"><i class="bi bi-shield-check text-success" style="font-size:1.8rem;"></i></span>
+                            <div class="stat-info ms-2">
+                                <span class="stat-number">100%</span>
+                                <span class="stat-label">Verified</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <div class="floating-card card-1">
+                        <span class="card-icon" style="font-size: 1.5rem;">🔧</span>
+                        <div class="ms-2">
+                            <span style="font-weight: 600; display:block;">Plumber Available</span>
+                            <span class="card-badge">Online</span>
+                        </div>
+                    </div>
+                    <div class="floating-card card-2">
+                        <span class="card-icon" style="font-size: 1.5rem; color: #f59e0b;">★★★★★</span>
+                        <span class="ms-2" style="font-weight: 600;">"Excellent work!"</span>
+                    </div>
+                    <div class="floating-card card-3">
+                        <span class="card-icon" style="font-size: 1.5rem;">👶</span>
+                        <div class="ms-2">
+                            <span style="font-weight: 600; display:block;">Babysitter</span>
+                            <span class="card-price">&#2547;250/hr</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories -->
+    <section class="categories-section">
+        <div class="hp-container">
+            <h2 class="section-title">Popular Services</h2>
+            <p class="section-subtitle">Browse through our most requested service categories</p>
+            <div class="categories-grid">
+                <a href="/customer/dashboard?skill=Plumber" class="category-card text-decoration-none">
+                    <div class="category-icon">🔧</div>
+                    <h3>Plumber</h3>
+                    <p>Pipe repairs, installations</p>
+                </a>
+                <a href="/customer/dashboard?skill=Electrician" class="category-card text-decoration-none">
+                    <div class="category-icon">⚡</div>
+                    <h3>Electrician</h3>
+                    <p>Wiring, repairs, setup</p>
+                </a>
+                <a href="/customer/dashboard?skill=Maid" class="category-card text-decoration-none">
+                    <div class="category-icon">🧹</div>
+                    <h3>Maid</h3>
+                    <p>Cleaning, organizing</p>
+                </a>
+                <a href="/customer/dashboard?skill=Babysitter" class="category-card text-decoration-none">
+                    <div class="category-icon">👶</div>
+                    <h3>Babysitter</h3>
+                    <p>Child care, supervision</p>
+                </a>
+                <a href="/customer/dashboard?skill=Cook" class="category-card text-decoration-none">
+                    <div class="category-icon">👨‍🍳</div>
+                    <h3>Cook</h3>
+                    <p>Meal prep, catering</p>
+                </a>
+                <a href="/customer/dashboard?skill=Driver" class="category-card text-decoration-none">
+                    <div class="category-icon">🚗</div>
+                    <h3>Driver</h3>
+                    <p>Personal, delivery</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works" id="about">
+        <div class="hp-container">
+            <h2 class="section-title">How Sobkaj Works</h2>
+            <p class="section-subtitle">Get help in 3 simple steps</p>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <div class="category-icon" style="font-size: 3rem; margin-bottom: 1.5rem;">🔍</div>
+                    <h3>Find a Worker</h3>
+                    <p>Browse verified workers by category, read reviews, and compare rates</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <div class="category-icon" style="font-size: 3rem; margin-bottom: 1.5rem;">📞</div>
+                    <h3>Book Service</h3>
+                    <p>Contact the worker directly and schedule a convenient time</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <div class="category-icon" style="font-size: 3rem; margin-bottom: 1.5rem;">⭐</div>
+                    <h3>Rate & Review</h3>
+                    <p>After the job, leave a review to help others find great workers</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="hp-container">
+            <div class="cta-card">
+                <div class="cta-content">
+                    <h2>Are You a Skilled Worker?</h2>
+                    <p>Join thousands of workers earning through Sobkaj. Create your profile and start getting
+                        customers today!</p>
+                    <a href="{{ url_for('register') }}?role=worker" class="hp-btn hp-btn-white hp-btn-lg text-decoration-none">
+                        <span class="hp-btn-icon"><i class="bi bi-rocket-takeoff"></i></span>
+                        Join as Worker - It's Free
+                    </a>
+                </div>
+                <div class="cta-features">
+                    <div class="cta-feature">
+                        <span class="check-icon">✓</span>
+                        <span>No registration fee</span>
+                    </div>
+                    <div class="cta-feature">
+                        <span class="check-icon">✓</span>
+                        <span>Set your own rates</span>
+                    </div>
+                    <div class="cta-feature">
+                        <span class="check-icon">✓</span>
+                        <span>Work on your schedule</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

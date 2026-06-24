@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}My Profile &mdash; Sobkaj{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <section class="card-glass-static p-4 p-md-5" aria-labelledby="profile-heading">
+            <h1 id="profile-heading" class="fw-bold mb-4 text-center" style="font-size: 1.5rem; color: var(--text-heading);">
+                <i class="bi bi-person-circle me-2" style="color: var(--accent);"></i>My Profile
+            </h1>
+            
+            <p class="text-center mb-4" style="color: var(--text-muted); font-size: 0.9rem;">
+                Update your personal details below.
+            </p>
+
+            <form method="POST" action="/customer/profile">
+                <!-- Name -->
+                <div class="mb-3">
+                    <label for="fullName" class="form-label">
+                        <i class="bi bi-person me-1"></i>Full Name
+                    </label>
+                    <input type="text" class="form-control" id="fullName" name="full_name"
+                           value="{{ customer.full_name }}" required placeholder="e.g. John Doe">
+                </div>
+
+                <!-- Email (Read Only typically, or just displayed) -->
+                <div class="mb-3">
+                    <label for="emailAddr" class="form-label">
+                        <i class="bi bi-envelope me-1"></i>Email Address
+                    </label>
+                    <input type="email" class="form-control" id="emailAddr" name="email"
+                           value="{{ customer.email }}" readonly disabled style="opacity: 0.6; background-color: var(--bg-deep);">
+                    <small style="color: var(--text-muted);">Email address cannot be changed.</small>
+                </div>
+
+                <!-- Phone Number -->
+                <div class="mb-4">
+                    <label for="phoneNumber" class="form-label">
+                        <i class="bi bi-telephone me-1"></i>Phone Number
+                    </label>
+                    <input type="text" class="form-control" id="phoneNumber" name="phone"
+                           value="{{ customer.phone or '' }}" placeholder="e.g. 01XXXXXXXXX" maxlength="20">
+                </div>
+
+                <div class="d-grid mt-2">
+                    <button type="submit" class="btn btn-primary-glow">
+                        <i class="bi bi-check2-circle me-1"></i>Save Changes
+                    </button>
+                </div>
+            </form>
+            
+            <div class="text-center mt-4">
+                <a href="/customer/dashboard" class="link-accent" style="font-size: 0.85rem;">
+                    <i class="bi bi-search me-1"></i>Back to Search Workers
+                </a>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

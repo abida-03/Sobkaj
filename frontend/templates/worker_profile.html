@@ -1,0 +1,457 @@
+{% extends "base.html" %}
+
+{% block title %}{{ worker.full_name }}'s Profile &mdash; Sobkaj{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* — Profile Header — */
+    .profile-header {
+        text-align: left;
+    }
+
+    .profile-avatar {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: var(--bg-surface);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        color: var(--text-muted);
+        border: 3px solid var(--accent);
+        margin-bottom: 1.25rem;
+        box-shadow: 0 0 0 6px var(--accent-glow);
+    }
+
+    .profile-name {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #fff;
+        margin-bottom: 0.6rem;
+        letter-spacing: -0.01em;
+    }
+
+    /* — Badges & Skills Row — */
+    .profile-meta-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        gap: 0.4rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .profile-skill-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.25rem 0.7rem;
+        border-radius: var(--radius-full);
+        font-size: 0.8rem;
+        font-weight: 500;
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* — Price Tag — */
+    .profile-price {
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: var(--success);
+        margin-bottom: 0.4rem;
+    }
+
+    /* — Rating — */
+    .profile-rating {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 0.4rem;
+    }
+    .profile-rating .stars {
+        color: var(--warning);
+        font-size: 1.15rem;
+        letter-spacing: 1px;
+    }
+    .profile-rating .score {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--warning);
+    }
+    .profile-rating .details {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.55);
+    }
+    .profile-rating .new-badge {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.95rem;
+    }
+
+    /* — Availability Status — */
+    .profile-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.35rem 1rem;
+        border-radius: var(--radius-full);
+        font-size: 0.82rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+    }
+    .profile-status.available {
+        background: var(--success-soft);
+        color: var(--success);
+        border: 1px solid rgba(69, 163, 126, 0.3);
+    }
+    .profile-status.busy {
+        background: var(--warning-soft);
+        color: var(--warning);
+        border: 1px solid rgba(214, 146, 56, 0.3);
+    }
+    .profile-status.offline {
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.45);
+        border: 1px solid var(--border);
+    }
+
+    /* — CTA area — */
+    .profile-cta {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+        margin-top: 24px !important;
+        margin-bottom: 24px !important;
+    }
+    .profile-cta .btn-book {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.8rem 2.5rem;
+        border-radius: var(--radius);
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all var(--transition);
+        border: none;
+        cursor: pointer;
+    }
+    .btn-book-primary {
+        background: linear-gradient(135deg, var(--success), #398266);
+        color: #fff;
+        box-shadow: 0 4px 14px rgba(69, 163, 126, 0.25);
+    }
+    .btn-book-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(69, 163, 126, 0.35);
+        color: #fff;
+    }
+    .btn-book-login {
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .btn-book-login:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        transform: translateY(-1px);
+    }
+    .cta-hint {
+        font-size: 0.78rem;
+        color: rgba(255, 255, 255, 0.35);
+    }
+    .btn-disabled-status {
+        background: rgba(255, 255, 255, 0.04);
+        color: rgba(255, 255, 255, 0.35);
+        border: 1px solid var(--border);
+        cursor: not-allowed;
+    }
+
+    /* — Reviews — */
+    .reviews-heading {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #fff;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 1.25rem;
+    }
+
+    .review-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 0.75rem;
+        transition: background var(--transition);
+    }
+    .review-card:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .review-author {
+        font-weight: 600;
+        color: #fff;
+        font-size: 0.95rem;
+    }
+    .review-date {
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.4);
+    }
+    .review-stars {
+        color: var(--warning);
+        font-size: 0.95rem;
+        letter-spacing: 1px;
+    }
+    .review-text {
+        color: rgba(255, 255, 255, 0.75);
+        line-height: 1.65;
+        font-size: 0.92rem;
+        margin-top: 0.6rem;
+    }
+
+    .empty-reviews {
+        text-align: center;
+        padding: 2.5rem 1rem;
+        color: rgba(255, 255, 255, 0.4);
+    }
+    .empty-reviews i {
+        font-size: 2rem;
+        margin-bottom: 0.75rem;
+        display: block;
+        opacity: 0.4;
+    }
+
+    /* — Contact Info — */
+    .profile-contact {
+        font-size: 0.88rem;
+        color: rgba(255, 255, 255, 0.55);
+        margin-bottom: 0;
+    }
+
+    /* — Back Link — */
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: rgba(255, 255, 255, 0.5);
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 500;
+        padding: 0.4rem 0.8rem;
+        border-radius: var(--radius-sm);
+        transition: all var(--transition);
+    }
+    .back-link:hover {
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mb-5">
+    <div class="row pt-4">
+        <div class="col-lg-8 mx-auto">
+
+            <!-- Back navigation -->
+            <div class="mb-4">
+                <a href="/customer/dashboard" class="back-link">
+                    <i class="bi bi-arrow-left"></i> Back to Workers
+                </a>
+            </div>
+
+            <section class="card-glass-static p-4 p-md-5 mb-4">
+                <div class="profile-header">
+                    <!-- Avatar -->
+                    <div class="profile-avatar">
+                        {% if worker.photo_url %}
+                            <img src="{{ worker.photo_url }}" alt="{{ worker.full_name }}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
+                        {% else %}
+                            <i class="bi bi-person"></i>
+                        {% endif %}
+                    </div>
+
+                    <!-- Name -->
+                    <h1 class="profile-name">{{ worker.full_name }}</h1>
+
+                    <!-- Badges + Skills — all on one row -->
+                    <div class="profile-meta-row">
+                        {% if worker.police_verified %}
+                        <span class="trust-badge trust-badge-verified">
+                            <i class="bi bi-person-check"></i>Verified
+                        </span>
+                        {% endif %}
+                        {% if worker.brac_trained %}
+                        <span class="trust-badge trust-badge-trained">
+                            <i class="bi bi-award"></i>BRAC Trained
+                        </span>
+                        {% endif %}
+                        {% if worker.skills_list %}
+                        {% for skill in worker.skills_list.split(', ') %}
+                        <span class="profile-skill-tag">{{ skill }}</span>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <!-- Price -->
+                    <div class="profile-price">
+                        <i class="bi bi-cash-stack" style="font-size: 1rem; opacity: 0.7;"></i>
+                        &#2547;{{ worker.hourly_rate }}/hr
+                    </div>
+
+                    <!-- Rating -->
+                    <div class="profile-rating">
+                        {% if worker.avg_rating %}
+                        <span class="stars">
+                            {% for i in range(1, 6) %}{% if i <= worker.avg_rating|int %}★{% else %}☆{% endif %}{% endfor %}
+                        </span>
+                        <span class="score">{{ worker.avg_rating }}</span>
+                        <span class="details">
+                            {{ worker.rating_count }} rating{{ 's' if worker.rating_count != 1 }}
+                            &middot;
+                            {{ worker.review_count }} review{{ 's' if worker.review_count != 1 }}
+                        </span>
+                        {% else %}
+                        <span class="new-badge">☆☆☆☆☆ New on Sobkaj</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Contact -->
+                    {% if worker.phone %}
+                    <div class="profile-contact">
+                        <i class="bi bi-telephone me-1"></i> {{ worker.phone }}
+                    </div>
+                    {% endif %}
+
+                    <!-- Availability + CTA -->
+                    <div class="profile-cta">
+                        {% if worker.availability_status == 'available' %}
+                            {% if session.get('user_id') and session.get('role') == 'customer' %}
+                            <button class="btn-book btn-book-primary" type="button" data-bs-toggle="modal" data-bs-target="#bookingModal">
+                                <i class="bi bi-calendar-check"></i> Book Now
+                            </button>
+                            {% else %}
+                            <a href="/login" class="btn-book btn-book-login text-decoration-none">
+                                <i class="bi bi-box-arrow-in-right"></i> Log in to book
+                            </a>
+                            {% endif %}
+                        {% elif worker.availability_status == 'busy' %}
+                            <span class="profile-status busy">
+                                <span class="status-dot"></span> Currently Busy
+                            </span>
+                            <button class="btn-book btn-disabled-status" disabled>
+                                <i class="bi bi-clock"></i> Not available right now
+                            </button>
+                        {% else %}
+                            <span class="profile-status offline">
+                                <span class="status-dot"></span> Offline
+                            </span>
+                            <button class="btn-book btn-disabled-status" disabled>
+                                <i class="bi bi-moon"></i> Worker is offline
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if worker.bio %}
+                <div class="mb-4">
+                    <h3 class="reviews-heading" style="font-size: 1rem; margin-bottom: 0.8rem;">
+                        <i class="bi bi-card-text me-2" style="color: var(--accent); font-size: 0.9rem;"></i>About
+                    </h3>
+                    <p class="review-text" style="margin-top: 0;">{{ worker.bio }}</p>
+                </div>
+                {% endif %}
+
+                <hr style="margin: 0 0 24px 0; border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+
+                <!-- Reviews Section -->
+                <div>
+                    <h3 class="reviews-heading">
+                        <i class="bi bi-chat-square-quote me-2" style="color: var(--accent); font-size: 0.95rem;"></i>Reviews ({{ reviews|length }})
+                    </h3>
+
+                    {% if reviews %}
+                    <div class="review-list">
+                        {% for r in reviews %}
+                        <div class="review-card">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="review-author">{{ r.customer_name or 'A Customer' }}</div>
+                                    <div class="review-date">{{ r.created_at.strftime('%B %d, %Y') if r.created_at else 'Recently' }}</div>
+                                </div>
+                                <div class="review-stars">
+                                    {% for i in range(1, 6) %}
+                                        {% if i <= r.stars|int %}★{% else %}☆{% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% if r.review_text %}
+                            <div class="review-text">"{{ r.review_text }}"</div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-reviews">
+                        <i class="bi bi-chat-square-text"></i>
+                        <p>No written reviews yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+
+        </div>
+    </div>
+</div>
+
+<!-- Booking Modal (if logged in customer) -->
+{% if session.get('user_id') and session.get('role') == 'customer' %}
+<div class="modal fade" id="bookingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--border);">
+                <h5 class="modal-title fw-bold" style="color: var(--text-heading);">
+                    <i class="bi bi-calendar-check me-2" style="color: var(--accent);"></i>Book {{ worker.full_name }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-center gap-2 mb-3 p-3"
+                     style="background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border);">
+                    <i class="bi bi-info-circle" style="color: var(--accent);"></i>
+                    <span style="color: rgba(255,255,255,0.65); font-size: 0.9rem;">
+                        Rate: <strong style="color: var(--success);">&#2547;{{ worker.hourly_rate }}/hr</strong>
+                        &nbsp;&middot;&nbsp; A 5% platform fee will be added
+                    </span>
+                </div>
+                <form action="/book_worker" method="POST">
+                    <input type="hidden" name="worker_id" value="{{ worker.user_id }}">
+                    <div class="mb-3">
+                        <label class="form-label"><i class="bi bi-calendar3 me-1"></i>Service Date</label>
+                        <input type="date" class="form-control" name="service_date" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label"><i class="bi bi-clock me-1"></i>Hours Required</label>
+                        <select name="hours" class="form-select" required>
+                            <option value="2">2 Hours</option>
+                            <option value="3">3 Hours</option>
+                            <option value="4">4 Hours (Half Day)</option>
+                            <option value="8">8 Hours (Full Day)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success-glow w-100">
+                        <i class="bi bi-check-circle me-1"></i>Confirm Booking
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -18,8 +18,24 @@ env/
 .env.*
 
 # Uploads (user-generated content — not tracked in Git)
-static/uploads/*
-!static/uploads/.gitkeep
+frontend/static/uploads/*
+!frontend/static/uploads/.gitkeep
+
+# Azure deployment artifacts
+.azure/
+appSettings.json
+.sync_token.txt
+
+# Logs and archives
+applogs/
+azure_logs/
+latest_runtime_logs/
+log_unzip_new/
+*.zip
+
+# Database dumps
+my_dump.sql
+worker_snapshot.json
 
 # OS / editor noise
 .DS_Store

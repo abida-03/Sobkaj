@@ -1,36 +1,28 @@
-"""
-email_utils.py — OTP generation and Gmail SMTP sender for Sobkaj.
-
-IMPORTANT: Replace the two variables below with your real Gmail
-address and a Google App Password (NOT your regular Gmail password).
-See the walkthrough for instructions on generating an App Password.
-"""
+# email_utils.py - handles OTP generation and sending verification emails
+# We use Gmail SMTP with an App Password (not the regular Gmail password).
+# The OTP is a random 6-digit number sent as a styled HTML email.
 
 import random
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-# ─────────────────────────────────────────────
-# ⚠️  FILL THESE IN WITH YOUR OWN CREDENTIALS
-# ─────────────────────────────────────────────
-GMAIL_ADDRESS      = "hamim00753@gmail.com"        # ← your Gmail
-GMAIL_APP_PASSWORD = "tsub ujuq ngwo kqrb"          # ← 16-char App Password
-# ─────────────────────────────────────────────
+
+# Gmail credentials for sending OTPs
+GMAIL_ADDRESS      = "hamim00753@gmail.com"
+GMAIL_APP_PASSWORD = "tsub ujuq ngwo kqrb"   # 16-character Google App Password
 
 
 def generate_otp():
-    """Return a random 6-digit OTP as a string."""
+    """Generates a random 6-digit code like '482917'."""
     return str(random.randint(100000, 999999))
 
 
 def send_otp_email(recipient_email, otp):
-    """
-    Send an OTP verification email via Gmail SMTP.
+    """Sends an HTML email containing the OTP to the user.
+    Returns True if sent successfully, False if something went wrong."""
 
-    Returns True on success, False on failure.
-    """
-    subject = "Sobkaj — Your Verification Code"
+    subject = "Sobkaj - Your Verification Code"
     body = f"""
     <html>
     <body style="font-family: Arial, sans-serif; padding: 20px;">
@@ -42,7 +34,7 @@ def send_otp_email(recipient_email, otp):
         </h1>
         <p style="color: #888;">This code expires when you close the registration page.</p>
         <br>
-        <p>— The Sobkaj Team</p>
+        <p>- The Sobkaj Team</p>
     </body>
     </html>
     """
@@ -54,6 +46,7 @@ def send_otp_email(recipient_email, otp):
     msg.attach(MIMEText(body, "html"))
 
     try:
+        # connect to Gmail SMTP on port 587 with TLS encryption
         with smtplib.SMTP("smtp.gmail.com", 587) as server:
             server.starttls()
             server.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
