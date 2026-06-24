@@ -37,6 +37,9 @@ log_unzip_new/
 my_dump.sql
 worker_snapshot.json
 
+# Project-specific exclusions
+DIU_AI_MVP_Competition_Top_10_Ideas.md
+
 # OS / editor noise
 .DS_Store
 Thumbs.db
